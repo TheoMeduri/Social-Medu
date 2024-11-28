@@ -72,7 +72,7 @@
                 </div>
             </div>
             <div class="btns">
-                <button>Editar Perfil</button>
+                <button onclick="editarOpen()">Editar Perfil</button>
                 <button>Compartilhar</button>
             </div>
             <div>
@@ -90,6 +90,76 @@
             </div>
         </div>
     </div>
+
+    <div class="page-modal">
+        <div class="page-modal-content">
+           <div class="header">
+                <span id="voltar"><i class="ri-arrow-left-s-line"></i></span>
+                <h3 id="title">Editar Perfil</h3>
+           </div>
+           <div class="user-img">
+                <img src="./12225935.png">
+                <span id="icon"><i class="ri-camera-line"></i></span>
+                <p>Alterar Foto</p>
+           </div>
+           <section>
+            <span id="title-section">Sobre você <br><br></span>
+                <div class="infos">
+                    <span><b>Nome</b></span>
+                    <div>
+                        <span><b id="name">Theo Meduri</b></span>
+                        <span id="ir"><i class="ri-arrow-right-s-line"></i></span>
+                    </div>
+                </div>
+                <div class="infos">
+                    <span><b>Nome de usuário</b></span>
+                    <div>
+                        <span><b id="username">@theomeduri</b></span>
+                        <span id="ir"><i class="ri-arrow-right-s-line"></i></span>
+                    </div>
+                </div>
+                <div class="infos">
+                    <span><b>Link do Perfil</b></span>
+                    <div>
+                        <span><b id="link">/@theomeduri</b></span>
+                        <span id="copy"><i class="ri-file-copy-fill"></i></span>
+                    </div>
+                </div>
+                <div class="infos">
+                    <span><b>Pronomes</b></span>
+                    <div>
+                        <span><b id="pronome">Ele/Dele</b></span>
+                        <span id="ir"><i class="ri-arrow-right-s-line"></i></span>
+                    </div>
+                </div>
+                <div class="infos">
+                    <span><b>Bio</b></span>
+                    <div>
+                        <span><b id="bio">Por enquanto, sem...</b></span>
+                        <span id="ir"><i class="ri-arrow-right-s-line"></i></span>
+                    </div>
+                </div>
+           </section>
+        </div>
+    </div>
+
+    <script>
+        
+        function editarOpen(){
+            document.querySelector('.page-modal').style.display = "block";
+            setTimeout(() => {
+                document.querySelector('.page-modal-content').classList.add('open');
+            }, 100)
+        };
+
+        const voltarBtn = document.getElementById('voltar');
+        voltarBtn.addEventListener('click', () => {
+            document.querySelector('.page-modal-content').classList.remove('open');
+            setTimeout(() => {
+                document.querySelector('.page-modal').style.display = "none";
+            }, 600);
+        })
+    </script>
 
     <!-- Firebase e Firestore -->
     <script type="module">

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.5.0/remixicon.css">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <title>Create Post</title>
+    <style>
+        body {
+            height: 100vh;
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <i class="ri-arrow-left-s-line"></i>
+            <div class="line"></div>
+        </div>
+        <div class="bottom">
+            <div class="times">
+                <div class="time" data="60s">
+                    60 s
+                </div>
+                <div class="time active" data="15s">
+                    15 s
+                </div>
+            </div>
+            <div class="counter">
+                <span id="counter" style="display: none;">00:00</span>
+            </div>
+            <span id="startBtn"></span>
+            <i class="ri-delete-back-2-line" id="deleteBtn"></i>
+        </div>
+    </div>
+
+    <div class="modal">
+        <div class="modal-content">
+            <span id="close" onclick="closeModal()">&times;</span>
+            <h3 id="title"><i class="ri-error-warning-line"></i> Ops.. Ocorreu um Erro</h3>
+            <p id="description">Erro ao fazer login. Por favor, tente novamente.</p>
+            <div id="close-footer">
+                <button id="close-btn" onclick="closeModal()">Fechar</button>
+                <button id="close-btn" onclick="confirmDelet()">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+const startBtn = document.getElementById('startBtn');
+const deleteBtn = document.getElementById('deleteBtn');
+const counter = document.getElementById('counter');
+const lineTime = document.querySelector('.line');
+const times = document.querySelectorAll('.time');
+const times2 = document.querySelector('.times');
+const title = document.getElementById('title');
+const description = document.getElementById('description');
+// Referências ao modal
+const modal = document.querySelector('.modal');
+        const modalContent = document.querySelector('.modal-content');
+
+// Função para abrir o modal
+function openModal() {
+            modal.style.display = "flex";
+            setTimeout(() => {
+                modal.style.opacity = "1"; // Gradualmente aparecer
+                modalContent.classList.add('open');
+            }, 100);
+        }
+
+function closeModal() {
+    modalContent.classList.remove('open');
+            setTimeout(() => {
+                modal.style.opacity = "0"; // Gradualmente aparecer
+                modal.style.display = "none";
+                startAnimation();
+} , 600);
+}
+
+
+// Variável global para armazenar o valor de timeVideo (tempo em segundos)
+let timeVideo = 15;  // Valor padrão (15 segundos)
+let startTime = 0;  // Armazena o tempo de início
+let elapsedTime = 0;  // Armazena o tempo já passado
+let isAnimating = false;  // Controla se a animação está em andamento
+
+// Função para formatar o tempo no formato mm:ss
+function formatTime(seconds) {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+    return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+}
+
+// Adiciona um evento de clique para cada elemento .time
+times.forEach(time => {
+    time.addEventListener('click', () => {
+        // Remove a classe "active" de todos os elementos .time
+        times.forEach(t => t.classList.remove('active'));
+
+        // Adiciona a classe "active" ao elemento clicado
+        time.classList.add('active');
+
+        // Pega o valor do atributo data do elemento clicado e atualiza a variável timeVideo
+        const timeData = time.getAttribute('data');
+        if (timeData === '60s') {
+            timeVideo = 60; // 60 segundos
+        } else if (timeData === '15s') {
+            timeVideo = 15; // 15 segundos
+        }
+
+        // Exibe o valor de timeVideo no console
+        console.log(timeVideo);
+    });
+});
+
+// Função para iniciar a animação e o contador
+function startAnimation() {
+    startTime = performance.now() - elapsedTime;  // Salva o tempo de início ou retoma de onde parou
+    isAnimating = true;  // Marca que a animação começou
+    requestAnimationFrame(updateProgress);  // Inicia a animação
+    updateCounter();  // Inicia o contador
+}
+
+// Função para pausar a animação e o contador
+function pauseAnimation() {
+    elapsedTime = performance.now() - startTime;  // Atualiza o tempo decorrido
+    isAnimating = false;  // Pausa a animação
+    updateCounter();  // Pausa o contador
+}
+
+// Função para atualizar o progresso da animação e o contador
+function updateProgress() {
+    if (isAnimating) {
+        elapsedTime = performance.now() - startTime;  // Calcula o tempo já decorrido
+
+        // Calcula o progresso da animação (de 0% a 100%)
+        const progress = (elapsedTime / (timeVideo * 1000)) * 100;
+
+        // Atualiza a posição da linha com base no progresso
+        lineTime.style.setProperty('--progress', `${progress}%`);
+
+        // Atualiza o contador de tempo
+        updateCounter();
+
+        // Verifica se a animação terminou
+        if (elapsedTime >= timeVideo * 1000) {
+            pauseAnimation();  // Pausa a animação quando atingir o tempo final
+            startBtn.classList.remove('clicked');  // Remove a classe "clicked" ao finalizar
+        } else {
+            requestAnimationFrame(updateProgress);  // Continua a animação
+        }
+    }
+}
+
+// Função para atualizar o contador de tempo
+function updateCounter() {
+    const remainingTime = Math.max(0, timeVideo - Math.floor(elapsedTime / 1000));  // Calcula o tempo restante
+    counter.textContent = formatTime(remainingTime);  // Atualiza o contador
+}
+
+// Função para resetar a animação
+function resetAnimation() {
+    // Zera a linha
+    lineTime.style.setProperty('--progress', '0%');
+
+    // Reseta o contador
+    counter.textContent = '00:00';
+
+    // Pausa a animação
+    pauseAnimation();
+
+    // Remove o estado "clicked" do botão de iniciar
+    startBtn.classList.remove('clicked');
+
+    // Torna o botão delete invisível novamente
+    deleteBtn.style.display = 'none';
+
+    // Reseta o tempo de vídeo para o valor inicial (15s)
+    timeVideo = 15;
+}
+
+// Evento de clique no startBtn
+startBtn.addEventListener("click", () => {
+    if (!isAnimating) {
+        // Se a animação não está em andamento, começa a animação e o contador
+        startBtn.classList.add('clicked');  // Adiciona a classe "clicked"
+        startAnimation();  // Inicia a animação e o contador
+        counter.style.display = "flex";
+        times2.style.display =  "none";
+        // Exibe o botão de deletar
+        deleteBtn.style.display = 'inline-block';
+    } else {
+        // Se a animação está em andamento, pausa a animação e o contador
+        pauseAnimation();  // Pausa a animação
+        startBtn.classList.remove('clicked');  // Remove a classe "clicked"
+    }
+});
+
+
+function confirmDelet() {
+    window.location.reload()
+}
+
+// Evento de clique no deleteBtn
+deleteBtn.addEventListener("click", () => {
+    openModal()
+    pauseAnimation();  // Pausa a animação
+    title.innerHTML = '<i class="ri-delete-bin-5-line"></i> Você vai apagar tudo!'
+    description.textContent = 'Após clicar em Confirmar, sua gravação será permanentemente apagada e não poderá ser recuperada em hipótese alguma. Por favor, verifique se deseja realmente excluir essa gravação, pois uma vez apagada, todos os dados serão irremediavelmente perdidos. Essa ação não pode ser desfeita, então, se tiver qualquer dúvida, não clique em Confirmar.'
+});
+    </script>
+    
+</body>
+</html>
