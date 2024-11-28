@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.5.0/remixicon.css">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <title>Home</title>
+    <style>
+        body {
+            height: 100vh;
+            position: relative;
+            background-color: #111420;
+        }
+    </style>
+</head>
+<body>
+    <div class="menu">
+        <ul>
+            <li>
+                <a href="./home">
+                    <i class="ri-home-line"></i>
+                </a>
+            </li>
+            <li>
+                <a href="./search">
+                    <i class="ri-search-line"></i>
+                </a>
+            </li>
+            <li>
+                <a href="./create-post">
+                    <span><i class="ri-add-line"></i></span>
+                </a>
+            </li>
+            <li>
+                <a href="./meds">
+                    <i class="ri-movie-line"></i>
+                </a>
+            </li>
+            <li>
+                <a href="./profile">
+                    <i class="ri-user-3-line"></i>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="container">
+        <div class="info">
+            <br>
+            <div class="user">
+                <div class="user-img"><img src="./12225935.png"></div>
+                <div class="name_verify">
+                    <div class="user-name"></div> 
+                    <div class="user-verify" style="display: none; color: #2e7afe;"><i class="ri-checkbox-circle-fill"></i></div>
+                </div>
+            </div>
+            <div class="boxs">
+                <div class="box">
+                    <h3 id="following">0</h3>
+                    <span>Seguindo</span>
+                </div>
+                <hr>
+                <div class="box">
+                    <h3 id="followers">0</h3>
+                    <span>Seguidores</span>
+                </div>
+                <hr>
+                <div class="box">
+                    <h3 id="posts">0</h3>
+                    <span>Posts</span>
+                </div>
+            </div>
+            <div class="btns">
+                <button>Editar Perfil</button>
+                <button>Compartilhar</button>
+            </div>
+            <div>
+                <p id="bio"></p>
+                <br>
+            </div>
+        </div>
+        <div class="posts" id="post-list">
+            <div class="post">
+                <span id="title-post">Melhor dia</span>
+                <div class="bottom-post">
+                    <i class="ri-play-line"></i>
+                    <div class="visus">13Mi</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase e Firestore -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+
+        // Configuração do Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyCNQRVoMiXG8pv8f1EDVDoTlkYvT7xqTdQ",
+            authDomain: "social-websmedu.firebaseapp.com",
+            projectId: "social-websmedu",
+            storageBucket: "social-websmedu.firebasestorage.app",
+            messagingSenderId: "940867777501",
+            appId: "1:940867777501:web:33b4dbaa0271a89a903c34"
+        };
+
+        // Inicializando Firebase e Firestore
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Referências no DOM
+        const followingCount = document.getElementById("following");
+        const followersCount = document.getElementById("followers");
+        const postsCount = document.getElementById("posts");
+        const verify = document.querySelector('.user-verify');
+        const username = document.querySelector('.user-name')
+        const bio = document.getElementById('bio');
+        const postList = document.getElementById("post-list");
+
+        // Função para formatar números
+        function formatNumber(number) {
+            if (number >= 1000000) {
+                return (number / 1000000).toFixed(1).replace('.0', '') + 'Mi';
+            } else if (number >= 10000) {
+                return (number / 1000).toFixed(1).replace('.0', '') + 'K';
+            } else if (number >= 1000) {
+                return number.toLocaleString('pt-BR'); // Formata como 1.000
+            } else {
+                return number.toString();
+            }
+        }
+
+        // Função para carregar dados do Firestore
+        async function loadData() {
+            try {
+                // Busca os dados da coleção "users" (exemplo)
+                const userDocs = await getDocs(collection(db, "users"));
+                userDocs.forEach((doc) => {
+                    const data = doc.data();
+
+                    // Atualize os valores no DOM formatados
+                    followingCount.textContent = formatNumber(data.seguindo || 0);
+                    followersCount.textContent = formatNumber(data.seguidores || 0);
+                    postsCount.textContent = formatNumber(data.posts || 0);
+                    bio.textContent = data.bio || "Por enquanto, sem biografia.";
+                    username.textContent = "@"+data.username;
+
+                    // Verifica se o usuário está verificado
+                    verify.style.display = data.verify === true ? 'block' : 'none';
+                });
+            } catch (error) {
+                console.error("Erro ao carregar os dados:", error);
+            }
+        }
+
+
+        // Chamada inicial
+        loadData();
+    </script>
+</body>
+</html>

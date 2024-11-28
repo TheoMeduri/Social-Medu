@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.5.0/remixicon.css">
+    <link rel="stylesheet" href="./assets/css/style.css">
+    <title>Login</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            position: relative;
+            overflow-y: hidden;
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <form id="loginForm">
+            <div class="input-group">
+                <h1>Login</h1>
+            </div>
+            <div class="input-group">
+                <label for="email">Email</label>
+                <input type="text" id="email" placeholder="Digite seu email" required>
+                <i class="ri-mail-line"></i>
+            </div>
+            <div class="input-group">
+                <label for="pass">Senha</label>
+                <input type="password" id="pass" placeholder="Digite sua senha" required>
+                <i class="ri-lock-line"></i>
+            </div>
+            <div class="input-group">
+                <button type="submit">Entrar</button>
+            </div>
+        </form>
+    </div>
+    <div id="message-form">
+        <p>Não tem uma conta? <a href="./">Cadastre-se já!</a></p>
+    </div>
+    <div class="modal">
+        <div class="modal-content">
+            <span id="close" onclick="closeModal()">&times;</span>
+            <h3 id="title"><i class="ri-error-warning-line"></i> Ops.. Ocorreu um Erro</h3>
+            <p id="description">Erro ao fazer login. Por favor, tente novamente.</p>
+            <div id="close-footer">
+                <button id="close-btn" onclick="closeModal()">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="loading-modal">
+        <div class="spinner"></div>
+    </div>
+
+    <script>
+        function closeModal() {
+            const modal = document.querySelector('.modal');
+        const modalContent = document.querySelector('.modal-content');
+
+            modal.style.opacity = "0";
+            modalContent.classList.remove('open');
+
+            setTimeout(() => {
+                modal.style.display = "none";
+            }, 600);
+        }
+    </script>
+    
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js';
+        import { getAuth, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js';
+
+        // Configuração do Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyCNQRVoMiXG8pv8f1EDVDoTlkYvT7xqTdQ",
+            authDomain: "social-websmedu.firebaseapp.com",
+            projectId: "social-websmedu",
+            storageBucket: "social-websmedu.firebasestorage.app",
+            messagingSenderId: "940867777501",
+            appId: "1:940867777501:web:33b4dbaa0271a89a903c34"
+        };
+
+        // Inicializando o Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Referências ao modal e loading
+        const modal = document.querySelector('.modal');
+        const modalContent = document.querySelector('.modal-content');
+        const loadingModal = document.querySelector('.loading-modal');
+        const title = document.getElementById('title');
+        const description = document.getElementById('description');
+
+        function openLoading() {
+            loadingModal.style.display = "flex";
+            setTimeout(() => {
+                loadingModal.style.opacity = "1";
+            }, 10);
+        }
+
+        function closeLoading() {
+            setTimeout(() => {
+                loadingModal.style.display = "none";
+            }, 10);
+            loadingModal.style.opacity = "0";
+        }
+
+        function openModal(message) {
+            modal.style.display = "flex";
+            setTimeout(() => {
+                modal.style.opacity = "1";
+                modalContent.classList.add('open');
+            }, 100);
+
+            description.textContent = message; // Atualiza a descrição
+        }
+
+
+        
+
+        async function login(event) {
+    event.preventDefault();
+    openLoading();
+
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('pass').value;
+
+    try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        console.log("Login bem-sucedido!", user);
+        window.location.href = './src/home';
+        closeLoading();
+    } catch (error) {
+        console.error("Erro ao fazer login:", error);
+
+        // Define a mensagem de erro de acordo com o tipo
+        let message;
+        if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+            message = 'Certifique-se de que o email e senha estão corretos, caso contrário você não irá conseguir acessar sua conta WebsMedu.';
+        } else {
+            message = 'Erro inesperado ao tentar fazer login. Tente novamente mais tarde. Isso pode ter ocorrido por falha em nosso servidor, espere um tempo.';
+        }
+
+        // Atualiza o título e a descrição do modal
+        title.innerHTML = '<i class="ri-error-warning-line"></i> Ops.. Ocorreu um Erro';
+        openModal(message);
+
+        closeLoading();
+    }
+}
+
+
+        document.getElementById('loginForm').addEventListener('submit', login);
+    </script>
+</body>
+</html>

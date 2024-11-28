@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.5.0/remixicon.css">
+    <link rel="stylesheet" href="./assets/css/style.css">
+    <title>Cadastre-se</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            position: relative;
+            overflow-y: hidden;
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <form id="registerForm">
+            <div class="input-group">
+                <h1>Cadastro</h1>
+            </div>
+            <div class="input-group">
+                <label for="name">Username</label>
+                <input type="text" id="name" placeholder="Digite um nome de usuário" required>
+                <i class="ri-at-line"></i>
+            </div>
+            <div class="input-group">
+                <label for="email">Email</label>
+                <input type="text" id="email" placeholder="Digite um email" required>
+                <i class="ri-mail-line"></i>
+            </div>
+            <div class="input-group">
+                <label for="pass">Senha</label>
+                <input type="password" id="pass" placeholder="Crie uma senha" required>
+                <i class="ri-lock-line"></i>
+            </div>
+            <div class="input-group">
+                <label for="confirm-pass">Confirme a Senha</label>
+                <input type="password" id="confirm-pass" placeholder="Confirme sua senha" required>
+                <i class="ri-lock-line"></i>
+            </div>
+            <div class="input-group">
+                <button type="submit">Cadastrar</button>
+            </div>
+        </form>
+    </div>
+    <div id="message-form">
+        <p>Já tem uma conta? <a href="./login">Entre já!</a></p>
+    </div>
+    <div class="modal">
+        <div class="modal-content">
+            <span id="close" onclick="closeModal()">&times;</span>
+            <h3 id="title"><i class="ri-error-warning-line"></i> Ops.. Ocorreu um Erro</h3>
+            <p id="description">Desculpe, mas o nome de usuário escolhido já está em uso. Por favor, tente um nome diferente ou adicione um caractere como "_" ou "." para personalizá-lo.</p>
+            <div id="close-footer">
+                <button id="close-btn" onclick="closeModal()">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="loading-modal">
+        <div class="spinner"></div>
+    </div>
+    <script>
+        function closeModal() {
+            const modal = document.querySelector('.modal');
+        const modalContent = document.querySelector('.modal-content');
+
+            modal.style.opacity = "0";
+            modalContent.classList.remove('open');
+
+            setTimeout(() => {
+                modal.style.display = "none";
+            }, 600);
+        }
+    </script>
+
+    <!-- Remover os links para a versão 8 do Firebase -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js';
+        import { getAuth, createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js';
+        import { getFirestore, doc, setDoc, collection, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js';
+    
+        // Configuração do Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyCNQRVoMiXG8pv8f1EDVDoTlkYvT7xqTdQ",
+            authDomain: "social-websmedu.firebaseapp.com",
+            projectId: "social-websmedu",
+            storageBucket: "social-websmedu.firebasestorage.app",
+            messagingSenderId: "940867777501",
+            appId: "1:940867777501:web:33b4dbaa0271a89a903c34"
+        };
+    
+        // Inicializando o Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+    
+        // Referências ao modal
+        const modal = document.querySelector('.modal');
+        const modalContent = document.querySelector('.modal-content');
+        const loadingModal = document.querySelector('.loading-modal');
+
+        function openLoading() {
+            loadingModal.style.display = "flex";
+        }
+
+        function closeLoading() {
+            loadingModal.style.display = "none";
+        }
+    
+        // Função para abrir o modal
+        function openModal() {
+            modal.style.display = "flex";
+            setTimeout(() => {
+                modal.style.opacity = "1"; // Gradualmente aparecer
+                modalContent.classList.add('open');
+            }, 100);
+        }
+
+    
+        // Referências aos campos do formulário
+        const usernameField = document.getElementById('name');
+        const emailField = document.getElementById('email');
+        const passField = document.getElementById('pass');
+        const confirmPassField = document.getElementById('confirm-pass');
+        const description = document.getElementById('description');
+        const title = document.getElementById('title');
+    
+        // Função de registro com verificação de nome de usuário
+        async function register(event) {
+            openLoading()
+            event.preventDefault(); // Previne o envio do formulário
+    
+            // Coletando valores do formulário
+            const username = usernameField.value;
+            const email = emailField.value;
+            const password = passField.value;
+            const confirmPassword = confirmPassField.value;
+    
+            // Validações simples
+            if (password !== confirmPassword) {
+                title.innerHTML = '<i class="ri-error-warning-line"></i> Ops.. Ocorreu um Erro';
+                description.textContent = 'As senhas informadas não coincidem. Por favor, tente novamente e certifique-se de digitar senhas iguais em ambos os campos.'
+                openModal()
+                return;
+            }
+    
+            try {
+                console.log("Iniciando verificação do nome de usuário...");
+                // Verificar se o nome de usuário já existe no Firestore
+                const usersRef = collection(db, 'users');
+                const q = query(usersRef, where("username", "==", username));
+                const querySnapshot = await getDocs(q);
+    
+                if (!querySnapshot.empty) {
+                    console.log("Nome de usuário já em uso.");
+                    title.innerHTML = '<i class="ri-error-warning-line"></i> Ops.. Ocorreu um Erro';
+                    description.textContent = 'Desculpe, mas o nome de usuário escolhido já está em uso. Por favor, tente um nome diferente ou adicione um caractere como "_" ou "." para personalizá-lo.';
+                    openModal(); // Abre o modal com erro
+                } else {
+                    console.log("Nome de usuário disponível. Criando usuário...");
+                    // Criar usuário com o Firebase Authentication
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    const user = userCredential.user;
+    
+                    console.log("Usuário criado com sucesso!", user);
+    
+                    // Armazenar dados do usuário no Firestore
+                    await setDoc(doc(db, 'users', user.uid), {
+                        username: username,
+                        email: email,
+                        verify: false,
+                        seguidores: 0,
+                        seguindo: 0,
+                        posts: 0,
+                        bio: 'Por enquanto, sem biografia.',
+                        private: false,
+                        createdAt: new Date()
+                    });
+    
+                    console.log("Usuário registrado no Firestore com sucesso!");
+                    alert("Cadastro realizado com sucesso!");
+                    closeLoading()
+                }
+            } catch (error) {
+                    console.error("Erro ao verificar ou criar usuário: ", error);
+
+                    if (error.code === 'auth/email-already-in-use') {
+                        title.innerHTML = '<i class="ri-error-warning-line"></i> Ops.. Ocorreu um Erro';
+                        description.textContent = 'Desculpe, mas o email escolhido já está em uso. Por favor, tente um email diferente ou veja se o email está correto.';
+                        openModal(); // Abre o modal com a mensagem de erro
+                    } else {
+                        alert("Erro ao registrar usuário ou verificar dados. Tente novamente.");
+                    }
+                    closeLoading();
+                }
+        }
+    
+        // Adicionando o evento de submit ao formulário
+        document.getElementById('registerForm').addEventListener('submit', register);
+    </script>
+
+    
+</body>
+</html>
